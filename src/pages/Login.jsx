@@ -27,17 +27,23 @@ const Login = () => {
             </CardHeader>
             <CardContent>
               <div className="grid gap-2 m-3">
-                <Label className="text-[17px]" htmlFor="email">Email</Label>
+                <Label className="text-[17px]" htmlFor="email">
+                  Email
+                </Label>
                 <Input id="email" type="email"></Input>
               </div>
               <div className="grid gap-2 m-3">
-                <Label className="text-[17px]" htmlFor="password">Password</Label>
+                <Label className="text-[17px]" htmlFor="password">
+                  Password
+                </Label>
                 <Input id="password" type="password"></Input>
               </div>
             </CardContent>
             <CardFooter>
               <div className="flex items-center justify-center w-full">
-                <Button className="w-full mx-3">Submit</Button>
+                <Button className="w-full mx-3 peer-active:bg-gray-700">
+                  Submit
+                </Button>
               </div>
             </CardFooter>
           </Card>
