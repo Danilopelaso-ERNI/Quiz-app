@@ -1,14 +1,21 @@
 import React from "react";
-import Login from "./pages/Login";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Home from "./pages/Home";
 
 const App = () => {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <>
-        <ModeToggle />
-        <Login />
+        <Router>
+          <ModeToggle />
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/Home" element={<Home />} />
+          </Routes>
+        </Router>
       </>
     </ThemeProvider>
   );

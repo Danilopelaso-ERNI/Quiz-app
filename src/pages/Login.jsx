@@ -41,8 +41,8 @@ const Login = () => {
             </CardContent>
             <CardFooter>
               <div className="flex items-center justify-center w-full">
-                <Button className="w-full mx-3 peer-active:bg-gray-700">
-                  Submit
+                <Button className="w-full mx-3 active:opacity-[0.9]">
+                  Login
                 </Button>
               </div>
             </CardFooter>
