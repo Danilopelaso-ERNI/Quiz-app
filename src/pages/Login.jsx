@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +31,12 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { login, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/home");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = (e) => {
     e.preventDefault();

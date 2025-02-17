@@ -14,7 +14,7 @@ export function ModeToggle() {
 
   return (
     <>
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 left-4">
         <DropdownMenu className="">
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon">

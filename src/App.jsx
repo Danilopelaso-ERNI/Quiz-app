@@ -6,7 +6,8 @@ import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Examinee from "./pages/Examinee";
 import Examiner from "./pages/Examiner";
-import { AuthProvider } from "./authContext";
+import { AuthProvider } from "./AuthContext";
+import ProtectedRoute from "./ProtectedRoute";
 
 const App = () => {
   return (
@@ -16,9 +17,30 @@ const App = () => {
           <ModeToggle />
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/examinee" element={<Examinee />} />
-            <Route path="/examiner" element={<Examiner />} />
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/examinee"
+              element={
+                <ProtectedRoute>
+                  <Examinee />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/examiner"
+              element={
+                <ProtectedRoute>
+                  <Examiner />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </Router>
       </AuthProvider>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
+import Navbar from "@/components/Navbar";
 
 import {
   Card,
@@ -97,61 +98,65 @@ const Examiner = () => {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <Card className="w-[350px]">
-        <CardHeader>
-          <CardTitle className="text-center font-bold">Quiz App</CardTitle>
-        </CardHeader>
-        {showScore ? (
-          <CardContent className="flex items-center justify-center flex-col space-y-2">
-            <Badge className="py-1 px-5 text-[15px] rounded-2xl">
-              You Scored {score} out of {questions.length}
-            </Badge>
-          </CardContent>
-        ) : (
-          <CardContent className="flex item-center flex-col justify-center space-y-2">
-            <p className="text-center pt-2 font-regular text-[15px]">
-              {questions[currentQuestion].questionText}
-            </p>
-            {questions[currentQuestion].answerOptions.map((option, index) => (
-              <Button
-                onClick={() => handleAnswerOption(index, option.isCorrect)}
-                variant="outline"
-                key={index}
-                className={`w-full ${
-                  answered
-                    ? option.isCorrect
-                      ? "bg-[#77B254] text-white"
-                      : selectedAnswer === index
-                      ? "bg-[#BE3144] text-white"
+    <>
+      <Navbar />
+
+      <div className="flex items-center justify-center h-screen">
+        <Card className="w-[350px]">
+          <CardHeader>
+            <CardTitle className="text-center font-bold">Quiz App</CardTitle>
+          </CardHeader>
+          {showScore ? (
+            <CardContent className="flex items-center justify-center flex-col space-y-2">
+              <Badge className="py-1 px-5 text-[15px] rounded-2xl">
+                You Scored {score} out of {questions.length}
+              </Badge>
+            </CardContent>
+          ) : (
+            <CardContent className="flex item-center flex-col justify-center space-y-2">
+              <p className="text-center pt-2 font-regular text-[15px]">
+                {questions[currentQuestion].questionText}
+              </p>
+              {questions[currentQuestion].answerOptions.map((option, index) => (
+                <Button
+                  onClick={() => handleAnswerOption(index, option.isCorrect)}
+                  variant="outline"
+                  key={index}
+                  className={`w-full ${
+                    answered
+                      ? option.isCorrect
+                        ? "bg-[#77B254] text-white"
+                        : selectedAnswer === index
+                        ? "bg-[#BE3144] text-white"
+                        : ""
                       : ""
-                    : ""
-                }`}
-              >
-                {option.answerText}
-              </Button>
-            ))}
-            <div className="">
-              <Button
-                onClick={nextQuestion}
-                className={`w-full`}
-                disabled={!answered}
-              >
-                Next Question
-              </Button>
-            </div>
-          </CardContent>
-        )}
-        {/* Conditionally render the CardDescription only if showScore is false */}
-        {!showScore && (
-          <CardDescription className="text-center mb-3">
-            <p>
-              Question {currentQuestion + 1} of {questions.length}
-            </p>
-          </CardDescription>
-        )}
-      </Card>
-    </div>
+                  }`}
+                >
+                  {option.answerText}
+                </Button>
+              ))}
+              <div className="">
+                <Button
+                  onClick={nextQuestion}
+                  className={`w-full`}
+                  disabled={!answered}
+                >
+                  Next Question
+                </Button>
+              </div>
+            </CardContent>
+          )}
+          {/* Conditionally render the CardDescription only if showScore is false */}
+          {!showScore && (
+            <CardDescription className="text-center mb-3">
+              <p>
+                Question {currentQuestion + 1} of {questions.length}
+              </p>
+            </CardDescription>
+          )}
+        </Card>
+      </div>
+    </>
   );
 };
 
