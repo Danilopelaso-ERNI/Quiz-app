@@ -1,100 +1,137 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import React, { useState, useEffect } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
 import Navbar from "@/components/Navbar";
-
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const questions = [
-  {
-    questionText: "What is the capital of France?",
-    answerOptions: [
-      { answerText: "New York", isCorrect: false },
-      { answerText: "London", isCorrect: false },
-      { answerText: "Paris", isCorrect: true },
-      { answerText: "Dublin", isCorrect: false },
-    ],
-  },
-  {
-    questionText: "Who is the CEO of Tesla?",
-    answerOptions: [
-      { answerText: "Jeff Bezos", isCorrect: false },
-      { answerText: "Elon Musk", isCorrect: true },
-      { answerText: "Bill Gates", isCorrect: false },
-      { answerText: "Tony Stark", isCorrect: false },
-    ],
-  },
-  {
-    questionText: "What is the largest planet in our solar system?",
-    answerOptions: [
-      { answerText: "Earth", isCorrect: false },
-      { answerText: "Jupiter", isCorrect: true },
-      { answerText: "Mars", isCorrect: false },
-      { answerText: "Saturn", isCorrect: false },
-    ],
-  },
-  {
-    questionText: 'Which element has the chemical symbol "O"?',
-    answerOptions: [
-      { answerText: "Gold", isCorrect: false },
-      { answerText: "Oxygen", isCorrect: true },
-      { answerText: "Osmium", isCorrect: false },
-      { answerText: "Hydrogen", isCorrect: false },
-    ],
-  },
-  {
-    questionText: "What is the smallest prime number?",
-    answerOptions: [
-      { answerText: "0", isCorrect: false },
-      { answerText: "1", isCorrect: false },
-      { answerText: "2", isCorrect: true },
-      { answerText: "3", isCorrect: false },
-    ],
-  },
-];
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const Examiner = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answered, setAnswered] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [score, setScore] = useState(0);
-  const [showScore, setShowScore] = useState(false);
+  const navigate = useNavigate();
+  const [questions, setQuestions] = useState([]);
+  const [editIndex, setEditIndex] = useState(null);
 
-  const nextQuestion = () => {
-    if (answered) {
-      const nextQuestion = currentQuestion + 1;
-      if (nextQuestion < questions.length) {
-        setCurrentQuestion(nextQuestion);
-        setAnswered(false);
-        setSelectedAnswer(null);
-      } else {
-        setShowScore(true);
+  const { register, control, handleSubmit, watch, setValue, reset } = useForm({
+    defaultValues: {
+      question: "",
+      answers: [{ answer: "", isCorrect: false }],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "answers",
+  });
+
+  useEffect(() => {
+    // Fetch questions from the API
+    fetch("https://localhost:7261/api/Question")
+      .then((response) => response.json())
+      .then((data) => {
+        // Ensure each question has an answers property
+        const questionsWithAnswers = data.map((question) => ({
+          ...question,
+          answers: question.answers || [],
+        }));
+        setQuestions(questionsWithAnswers);
+      })
+      .catch((error) => console.error("Error fetching questions:", error));
+  }, []);
+
+  const onSubmit = async (data) => {
+    if (editIndex !== null) {
+      // Update existing question
+      const questionId = questions[editIndex].id;
+      try {
+        const response = await fetch(`https://localhost:7261/api/Question/${questionId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+        if (response.ok) {
+          const updatedQuestions = [...questions];
+          updatedQuestions[editIndex] = { ...data, id: questionId };
+          setQuestions(updatedQuestions);
+          setEditIndex(null);
+        } else {
+          console.error("Error updating question:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error updating question:", error);
       }
+    } else {
+      // Create new question
+      try {
+        const response = await fetch("https://localhost:7261/api/Question", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+        if (response.ok) {
+          const newQuestion = await response.json();
+          setQuestions([...questions, newQuestion]);
+        } else {
+          console.error("Error creating question:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error creating question:", error);
+      }
+    }
+    reset({ question: "", answers: [{ answer: "", isCorrect: false }] });
+  };
+
+  const handleEdit = (index) => {
+    setEditIndex(index);
+    const questionToEdit = questions[index];
+    reset(questionToEdit);
+  };
+
+  const handleDelete = async (index) => {
+    const questionId = questions[index].id;
+    try {
+      const response = await fetch(`https://localhost:7261/api/Question/${questionId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        const updatedQuestions = questions.filter((_, i) => i !== index);
+        setQuestions(updatedQuestions);
+      } else {
+        console.error("Error deleting question:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error deleting question:", error);
     }
   };
 
-  const handleAnswerOption = (index, isCorrect) => {
-    setAnswered(true);
-    setSelectedAnswer(index);
-    if (isCorrect) {
-      setScore(score + 1);
-    }
+  const handleCorrectAnswerChange = (index) => {
+    const answers = watch("answers");
+    answers.forEach((answer, i) => {
+      setValue(`answers.${i}.isCorrect`, i === index);
+    });
+  };
+
+  const handleLogoutClick = () => {
+    navigate("/home");
   };
 
   return (
@@ -102,59 +139,139 @@ const Examiner = () => {
       <Navbar />
 
       <div className="flex items-center justify-center h-screen">
-        <Card className="w-[350px]">
-          <CardHeader>
-            <CardTitle className="text-center font-bold">Quiz App</CardTitle>
-          </CardHeader>
-          {showScore ? (
-            <CardContent className="flex items-center justify-center flex-col space-y-2">
-              <Badge className="py-1 px-5 text-[15px] rounded-2xl">
-                You Scored {score} out of {questions.length}
-              </Badge>
+        <div className="flex flex-col items-center">
+          <Card className="w-[500px] mb-4">
+            <CardHeader>
+              <CardTitle>Create Question</CardTitle>
+              <CardDescription>
+                Create your set of questions here!
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="grid w-full items-center gap-4">
+                  <div className="flex flex-col space-y-1.5 mb-2">
+                    <Label htmlFor="question">Question</Label>
+                    <Input
+                      id="question"
+                      placeholder="Input your question"
+                      {...register("question", { required: true })}
+                    />
+                  </div>
+                  <div className="flex flex-col space-y-1.5 mb-4">
+                    <Label>Answer Options</Label>
+                    {fields.map((field, index) => (
+                      <div
+                        key={field.id}
+                        className="flex items-center space-x-2 mb-2"
+                      >
+                        <Input
+                          placeholder="Input answer choice"
+                          {...register(`answers.${index}.answer`, {
+                            required: true,
+                          })}
+                        />
+                        <Checkbox
+                          checked={watch(`answers.${index}.isCorrect`)}
+                          onCheckedChange={() =>
+                            handleCorrectAnswerChange(index)
+                          }
+                        />
+                        <Button
+                          variant="outline"
+                          type="button"
+                          onClick={() => remove(index)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      className="mt-4"
+                      variant="outline"
+                      type="button"
+                      onClick={() => append({ answer: "", isCorrect: false })}
+                    >
+                      Add Answer
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <Button onClick={handleLogoutClick} variant="outline">
+                    Go back
+                  </Button>
+                  <Button type="submit">
+                    {editIndex !== null ? "Update" : "Submit"}
+                  </Button>
+                </div>
+              </form>
             </CardContent>
-          ) : (
-            <CardContent className="flex item-center flex-col justify-center space-y-2">
-              <p className="text-center pt-2 font-regular text-[15px]">
-                {questions[currentQuestion].questionText}
-              </p>
-              {questions[currentQuestion].answerOptions.map((option, index) => (
-                <Button
-                  onClick={() => handleAnswerOption(index, option.isCorrect)}
-                  variant="outline"
-                  key={index}
-                  className={`w-full ${
-                    answered
-                      ? option.isCorrect
-                        ? "bg-[#77B254] text-white"
-                        : selectedAnswer === index
-                        ? "bg-[#BE3144] text-white"
-                        : ""
-                      : ""
-                  }`}
-                >
-                  {option.answerText}
-                </Button>
-              ))}
-              <div className="">
-                <Button
-                  onClick={nextQuestion}
-                  className={`w-full`}
-                  disabled={!answered}
-                >
-                  Next Question
-                </Button>
-              </div>
+          </Card>
+          <Card className="w-[800px]">
+            <CardHeader>
+              <CardTitle className="">Questions List</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table className="w-full text-center">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-center">Question</TableHead>
+                    <TableHead className="text-center">Answers</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {questions && questions.length > 0 ? (
+                    questions.map((q, index) => (
+                      <TableRow key={index} className="text-center">
+                        <TableCell className="text-center">
+                          {q.text}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <ul>
+                            {q.answers && q.answers.length > 0 ? (
+                              q.answers.map((a, i) => (
+                                <li
+                                  key={i}
+                                  className={a.isCorrect ? "font-bold" : ""}
+                                >
+                                  {a.text}
+                                </li>
+                              ))
+                            ) : (
+                              <li>No answers available.</li>
+                            )}
+                          </ul>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button
+                            variant="outline"
+                            onClick={() => handleEdit(index)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="ml-2"
+                            onClick={() => handleDelete(index)}
+                          >
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan="3" className="text-center">
+                        No questions available.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
-          )}
-          {/* Conditionally render the CardDescription only if showScore is false */}
-          {!showScore && (
-            <CardDescription className="text-center mb-3">
-              <p>
-                Question {currentQuestion + 1} of {questions.length}
-              </p>
-            </CardDescription>
-          )}
-        </Card>
+          </Card>
+        </div>
       </div>
     </>
   );
