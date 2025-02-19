@@ -1,15 +1,4 @@
 import React, { useState, useEffect } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 
 import {
   Card,
@@ -107,9 +96,6 @@ const Login = () => {
               </div>
             </CardFooter>
           </Card>
-
-
-          
         </div>
       </div>
     </>

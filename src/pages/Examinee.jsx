@@ -20,11 +20,9 @@ const Examinee = () => {
   const [showScore, setShowScore] = useState(false);
 
   useEffect(() => {
-    // Fetch questions from the API
     fetch("https://localhost:7261/api/Question")
       .then((response) => response.json())
       .then((data) => {
-        // Ensure each question has an answers property
         const questionsWithAnswers = data.map((question) => ({
           ...question,
           answers: question.answers || [],
@@ -108,7 +106,7 @@ const Examinee = () => {
                   </div>
                 </>
               ) : (
-                <p>Loading questions...</p>
+                <p className="text-center p-3">Loading quizzes...</p>
               )}
             </CardContent>
           )}
