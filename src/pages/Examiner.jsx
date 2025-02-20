@@ -55,7 +55,6 @@ const Examiner = () => {
   useEffect(() => {
     fetch("https://localhost:7261/api/Question", {
       method: "GET",
-      
       headers: {
         "Content-Type": "application/json",
       },
@@ -168,9 +167,9 @@ const Examiner = () => {
     <>
       <Navbar />
 
-      <div className="flex items-center justify-center h-screen">
-        <div className="flex flex-col items-center">
-          <Card className="w-[500px] mb-4">
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <div className="w-full max-w-[500px] mb-8 mt-[50px]">
+          <Card>
             <CardHeader>
               <CardTitle>Create Question</CardTitle>
               <CardDescription>
@@ -208,6 +207,7 @@ const Examiner = () => {
                           }
                         />
                         <Button
+                          className="hover:bg-red-700 hover:text-white"
                           variant="outline"
                           type="button"
                           onClick={() => remove(index)}
@@ -237,94 +237,102 @@ const Examiner = () => {
               </form>
             </CardContent>
           </Card>
-          <Card className="w-[800px]">
+        </div>
+
+        <div className="w-full max-w-[800px]">
+          <Card>
             <CardHeader>
-              <CardTitle className="">Questions List</CardTitle>
+              <CardTitle>Questions List</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table className="w-full text-center">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-center">Question</TableHead>
-                    <TableHead className="text-center">Answers</TableHead>
-                    <TableHead className="text-center">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {questions && questions.length > 0 ? (
-                    questions.map((q, index) => (
-                      <TableRow key={index} className="text-center">
-                        <TableCell className="text-center">{q.text}</TableCell>
-                        <TableCell className="text-center">
-                          <ul>
-                            {q.answers && q.answers.length > 0 ? (
-                              q.answers.map((a, i) => (
-                                <li
-                                  key={i}
-                                  className={a.isCorrect ? "font-bold" : ""}
+              <div className="overflow-x-auto">
+                <Table className="w-full min-w-[600px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-center">Question</TableHead>
+                      <TableHead className="text-center">Answers</TableHead>
+                      <TableHead className="text-center">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {questions && questions.length > 0 ? (
+                      questions.map((q, index) => (
+                        <TableRow key={index} className="">
+                          <TableCell className="">
+                            {q.text}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <ul>
+                              {q.answers && q.answers.length > 0 ? (
+                                q.answers.map((a, i) => (
+                                  <li
+                                    key={i}
+                                    className={a.isCorrect ? "font-bold" : ""}
+                                  >
+                                    {a.text}
+                                  </li>
+                                ))
+                              ) : (
+                                <li>No answers available.</li>
+                              )}
+                            </ul>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button
+                              className="m-2 hover:bg-yellow-400 "
+                              variant="outline"
+                              onClick={() => handleEdit(index)}
+                            >
+                              Edit
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="ml-2 hover:bg-red-700 hover:text-white"
+                                  onClick={() => {
+                                    setDeleteIndex(index);
+                                    setIsDialogOpen(true);
+                                  }}
                                 >
-                                  {a.text}
-                                </li>
-                              ))
-                            ) : (
-                              <li className="">No answers available.</li>
-                            )}
-                          </ul>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Button
-                            variant="outline"
-                            onClick={() => handleEdit(index)}
-                          >
-                            Edit
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className="ml-2"
-                                onClick={() => {
-                                  setDeleteIndex(index);
-                                  setIsDialogOpen(true);
-                                }}
-                              >
-                                Delete
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Confirm Deletion
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete this question?
-                                  This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel
-                                  onClick={() => setIsDialogOpen(false)}
-                                >
-                                  Cancel
-                                </AlertDialogCancel>
-                                <AlertDialogAction onClick={handleDelete}>
                                   Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Confirm Deletion
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this
+                                    question? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel
+                                    onClick={() => setIsDialogOpen(false)}
+                                  >
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction onClick={handleDelete}>
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan="3" className="text-center pt-5">
+                          No sets of quizzes are available yet.
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan="3" className="text-center pt-5 ">
-                        No sets of quizzes are available yet.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>
