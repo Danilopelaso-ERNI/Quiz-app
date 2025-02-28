@@ -38,14 +38,18 @@ const Examiner = () => {
   });
 
   useEffect(() => {
-    fetch("https://localhost:7261/api/Question", {
-      method: "GET",
-      
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
+    const fetchQuestions = async () => {
+      const token = localStorage.getItem("token");
+
+      try {
+        const response = await fetch("https://localhost:7261/api/Question", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -183,28 +187,12 @@ const Examiner = () => {
                     {fields.map((field, index) => (
                       <AnswerOption
                         key={field.id}
-                        className="flex items-center space-x-2 mb-2"
-                      >
-                        <Input
-                          placeholder="Input answer choice"
-                          {...register(`answers.${index}.text`, {
-                            required: true,
-                          })}
-                        />
-                        <Checkbox
-                          checked={watch(`answers.${index}.isCorrect`)}
-                          onCheckedChange={() =>
-                            handleCorrectAnswerChange(index)
-                          }
-                        />
-                        <Button
-                          variant="outline"
-                          type="button"
-                          onClick={() => remove(index)}
-                        >
-                          Remove
-                        </Button>
-                      </div>
+                        index={index}
+                        register={register}
+                        watch={watch}
+                        setValue={setValue}
+                        remove={remove}
+                      />
                     ))}
                     <Button
                       className="mt-4"
@@ -235,89 +223,16 @@ const Examiner = () => {
               <CardTitle>Questions List</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table className="w-full text-center">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-center">Question</TableHead>
-                    <TableHead className="text-center">Answers</TableHead>
-                    <TableHead className="text-center">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {questions && questions.length > 0 ? (
-                    questions.map((q, index) => (
-                      <TableRow key={index} className="text-center">
-                        <TableCell className="text-center">{q.text}</TableCell>
-                        <TableCell className="text-center">
-                          <ul>
-                            {q.answers && q.answers.length > 0 ? (
-                              q.answers.map((a, i) => (
-                                <li
-                                  key={i}
-                                  className={a.isCorrect ? "font-bold" : ""}
-                                >
-                                  {a.text}
-                                </li>
-                              ))
-                            ) : (
-                              <li className="">No answers available.</li>
-                            )}
-                          </ul>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Button
-                            variant="outline"
-                            onClick={() => handleEdit(index)}
-                          >
-                            Edit
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className="ml-2"
-                                onClick={() => {
-                                  setDeleteIndex(index);
-                                  setIsDialogOpen(true);
-                                }}
-                              >
-                                Delete
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Confirm Deletion
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete this question?
-                                  This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel
-                                  onClick={() => setIsDialogOpen(false)}
-                                >
-                                  Cancel
-                                </AlertDialogCancel>
-                                <AlertDialogAction onClick={handleDelete}>
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan="3" className="text-center pt-5 ">
-                        No sets of quizzes are available yet.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <CustomTable
+                  data={questions}
+                  onEdit={handleEdit}
+                  onDelete={(index) => {
+                    setDeleteIndex(index);
+                    setIsDialogOpen(true);
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
         </div>

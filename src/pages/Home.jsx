@@ -21,12 +21,16 @@ const Home = () => {
       <Navbar />
       <div className="flex items-center justify-center h-screen">
         <div className="flex space-x-3">
-          <Button onClick={handleExamineeClick} className="font-bold">
-            Examinee
-          </Button>
-          <Button onClick={handleExaminerClick} className="font-bold">
-            Examiner
-          </Button>
+          {userRole === "Examiner" && (
+            <Button onClick={handleExaminerClick} className="font-bold">
+              Examiner
+            </Button>
+          )}
+          {userRole === "Examinee" && (
+            <Button onClick={handleExamineeClick} className="font-bold">
+              Examinee
+            </Button>
+          )}
         </div>
       </div>
     </>

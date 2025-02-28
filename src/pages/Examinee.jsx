@@ -15,7 +15,7 @@ const Examinee = () => {
   const { isAuthenticated } = useAuth();
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answered, setAnswered] = useState(false);  
+  const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
@@ -75,7 +75,7 @@ const Examinee = () => {
   };
 
   return (
-    <>  
+    <>
       <Navbar />
 
       <div className="flex items-center justify-center h-screen">
