@@ -14,11 +14,13 @@ const Navbar = () => {
   };
 
   return (
-    <div className="absolute top-4 right-6">
-      <div className="container mx-auto flex justify-between items-center">
-        <Button onClick={handleLogout} className="font-bold rounded-lg">
-          <LogOut className="font-bold" />
-        </Button>
+    <div>
+      <div className="absolute top-5 right-6">
+        <div className="container mx-auto flex justify-between items-center">
+          <Button onClick={handleLogout} className="font-bold rounded-lg">
+            <LogOut className="font-bold" />
+          </Button>
+        </div>
       </div>
     </div>
   );
