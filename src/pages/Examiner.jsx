@@ -1,40 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import Navbar from "@/components/Navbar";
-import { Button } from "@/components/ui/button";
+import Navbar from "../components/Navbar";
+import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Label } from "../components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
+} from "../components/ui/card";
+import FormInput from "../components/FormInput";
+import AnswerOption from "../components/AnswerOption";
+import CustomTable from "../components/CustomTable";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { useAuth } from "../AuthContext";
 
 const Examiner = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [questions, setQuestions] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [deleteIndex, setDeleteIndex] = useState(null);
@@ -55,6 +40,7 @@ const Examiner = () => {
   useEffect(() => {
     fetch("https://localhost:7261/api/Question", {
       method: "GET",
+      
       headers: {
         "Content-Type": "application/json",
       },
@@ -63,20 +49,26 @@ const Examiner = () => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-        return response.json();
-      })
-      .then((data) => {
+
+        const data = await response.json();
         const questionsWithAnswers = data.map((question) => ({
           ...question,
           answers: question.answers || [],
         }));
         setQuestions(questionsWithAnswers);
-      })
-      .catch((error) => console.error("Error fetching questions:", error));
-  }, []);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchQuestions();
+    }
+  }, [isAuthenticated]);
 
   const onSubmit = async (data) => {
-    console.log("Submitting data:", data);
+    const token = localStorage.getItem("token");
+
     if (editIndex !== null) {
       const questionId = questions[editIndex].id;
       try {
@@ -86,6 +78,7 @@ const Examiner = () => {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(data),
           }
@@ -107,6 +100,7 @@ const Examiner = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(data),
         });
@@ -132,11 +126,16 @@ const Examiner = () => {
   const handleDelete = async () => {
     if (deleteIndex === null) return;
     const questionId = questions[deleteIndex].id;
+    const token = localStorage.getItem("token");
+
     try {
       const response = await fetch(
         `https://localhost:7261/api/Question/${questionId}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
       if (response.ok) {
@@ -150,13 +149,6 @@ const Examiner = () => {
     } catch (error) {
       console.error("Error deleting question:", error);
     }
-  };
-
-  const handleCorrectAnswerChange = (index) => {
-    const answers = watch("answers");
-    answers.forEach((answer, i) => {
-      setValue(`answers.${i}.isCorrect`, i === index);
-    });
   };
 
   const handleLogoutClick = () => {
@@ -179,18 +171,17 @@ const Examiner = () => {
             <CardContent>
               <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid w-full items-center gap-4">
-                  <div className="flex flex-col space-y-1.5 mb-2">
-                    <Label htmlFor="text">Question</Label>
-                    <Input
-                      id="text"
-                      placeholder="Input your question"
-                      {...register("text", { required: true })}
-                    />
-                  </div>
+                  <FormInput
+                    id="text"
+                    label="Question"
+                    placeholder="Input your question"
+                    register={register}
+                    required
+                  />
                   <div className="flex flex-col space-y-1.5 mb-4">
                     <Label>Answer Options</Label>
                     {fields.map((field, index) => (
-                      <div
+                      <AnswerOption
                         key={field.id}
                         className="flex items-center space-x-2 mb-2"
                       >
@@ -207,7 +198,6 @@ const Examiner = () => {
                           }
                         />
                         <Button
-                          className="hover:bg-red-700 hover:text-white"
                           variant="outline"
                           type="button"
                           onClick={() => remove(index)}
@@ -245,98 +235,101 @@ const Examiner = () => {
               <CardTitle>Questions List</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <Table className="w-full min-w-[600px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-center">Question</TableHead>
-                      <TableHead className="text-center">Answers</TableHead>
-                      <TableHead className="text-center">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {questions && questions.length > 0 ? (
-                      questions.map((q, index) => (
-                        <TableRow key={index} className="">
-                          <TableCell className="">
-                            {q.text}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <ul>
-                              {q.answers && q.answers.length > 0 ? (
-                                q.answers.map((a, i) => (
-                                  <li
-                                    key={i}
-                                    className={a.isCorrect ? "font-bold" : ""}
-                                  >
-                                    {a.text}
-                                  </li>
-                                ))
-                              ) : (
-                                <li>No answers available.</li>
-                              )}
-                            </ul>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Button
-                              className="m-2 hover:bg-yellow-400 "
-                              variant="outline"
-                              onClick={() => handleEdit(index)}
-                            >
-                              Edit
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className="ml-2 hover:bg-red-700 hover:text-white"
-                                  onClick={() => {
-                                    setDeleteIndex(index);
-                                    setIsDialogOpen(true);
-                                  }}
+              <Table className="w-full text-center">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-center">Question</TableHead>
+                    <TableHead className="text-center">Answers</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {questions && questions.length > 0 ? (
+                    questions.map((q, index) => (
+                      <TableRow key={index} className="text-center">
+                        <TableCell className="text-center">{q.text}</TableCell>
+                        <TableCell className="text-center">
+                          <ul>
+                            {q.answers && q.answers.length > 0 ? (
+                              q.answers.map((a, i) => (
+                                <li
+                                  key={i}
+                                  className={a.isCorrect ? "font-bold" : ""}
                                 >
+                                  {a.text}
+                                </li>
+                              ))
+                            ) : (
+                              <li className="">No answers available.</li>
+                            )}
+                          </ul>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button
+                            variant="outline"
+                            onClick={() => handleEdit(index)}
+                          >
+                            Edit
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="ml-2"
+                                onClick={() => {
+                                  setDeleteIndex(index);
+                                  setIsDialogOpen(true);
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Confirm Deletion
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this question?
+                                  This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel
+                                  onClick={() => setIsDialogOpen(false)}
+                                >
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDelete}>
                                   Delete
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Confirm Deletion
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete this
-                                    question? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel
-                                    onClick={() => setIsDialogOpen(false)}
-                                  >
-                                    Cancel
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction onClick={handleDelete}>
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan="3" className="text-center pt-5">
-                          No sets of quizzes are available yet.
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </TableCell>
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan="3" className="text-center pt-5 ">
+                        No sets of quizzes are available yet.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onConfirm={handleDelete}
+        title="Confirm Deletion"
+        description="Are you sure you want to delete this question? This action cannot be undone."
+      />
     </>
   );
 };
