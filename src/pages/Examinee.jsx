@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import Navbar from "@/components/Navbar";
-
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import Navbar from "../components/Navbar";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "../components/ui/card";
+import { useAuth } from "../AuthContext";
 
 const Examinee = () => {
+  const { isAuthenticated } = useAuth();
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answered, setAnswered] = useState(false);
@@ -20,17 +21,37 @@ const Examinee = () => {
   const [showScore, setShowScore] = useState(false);
 
   useEffect(() => {
-    fetch("https://localhost:7261/api/Question")
-      .then((response) => response.json())
-      .then((data) => {
+    const fetchQuestions = async () => {
+      const token = localStorage.getItem("token");
+
+      try {
+        const response = await fetch("https://localhost:7261/api/Question", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
         const questionsWithAnswers = data.map((question) => ({
           ...question,
           answers: question.answers || [],
         }));
         setQuestions(questionsWithAnswers);
-      })
-      .catch((error) => console.error("Error fetching questions:", error));
-  }, []);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchQuestions();
+    }
+  }, [isAuthenticated]);
 
   const nextQuestion = () => {
     if (answered) {

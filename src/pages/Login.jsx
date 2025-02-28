@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from "react";
-
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
+import { cn } from "../lib/utils";
+import { Button } from "../components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/authContext";
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 
-const Login = () => {
+const Login = ({ className, ...props }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,78 +26,90 @@ const Login = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    const mockEmail = "danilopelaso";
-    const mockPassword = "password";
-
-    if (email === mockEmail && password === mockPassword) {
-      login();
+    try {
+      await login(email, password);
       navigate("/home");
-    } else {
+    } catch (error) {
       setError("Invalid email or password");
-    }
-
-    if (isAuthenticated) {
-      navigate("/home");
     }
   };
 
   return (
-    <>
-      <div className="flex items-center justify-center h-screen">
-        <div>
-          <Card className="w-[400px] shadow-md">
-            <CardHeader>
-              <div className="flex justify-center">
-                <CardTitle className="font-bold text-[35px]">Login</CardTitle>
+    <div
+      className={cn(
+        "flex flex-col gap-6 items-center justify-center h-screen",
+        className
+      )}
+      {...props}
+    >
+      <Card className="w-[400px] shadow-md">
+        <CardHeader>
+          <CardTitle className="text-2xl text-center pb-3">Login</CardTitle>
+          <CardDescription>
+            Enter your email below to login to your Quiz App
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin}>
+            <div className="flex flex-col gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(""); // Reset error on input change
+                  }}
+                  required
+                  aria-label="Email"
+                />
               </div>
-              <div className="flex justify-center">
-                <CardDescription>This is a basic Quiz App</CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLogin}>
-                <div className="grid gap-2 m-3">
-                  <Label className="text-[17px]" htmlFor="email">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                  <a
+                    href="#"
+                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                  >
+                    Forgot your password?
+                  </a>
                 </div>
-                <div className="grid gap-2 m-3">
-                  <Label className="text-[17px]" htmlFor="password">
-                    Password
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                {error && <p className="text-red-500 text-center">{error}</p>}
-              </form>
-            </CardContent>
-            <CardFooter>
-              <div className="flex items-center justify-center w-full">
-                <Button
-                  className="w-full mx-3 active:opacity-[0.9]"
-                  onClick={handleLogin}
-                >
-                  Login
-                </Button>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(""); // Reset error on input change
+                  }}
+                  required
+                  aria-label="Password"
+                />
               </div>
-            </CardFooter>
-          </Card>
-        </div>
-      </div>
-    </>
+              {error && <p className="text-red-500 text-center">{error}</p>}
+              <Button type="submit" className="w-full">
+                Login
+              </Button>
+              <Button variant="outline" className="w-full">
+                Login with Microsoft
+              </Button>
+            </div>
+            <div className="mt-4 text-center text-sm">
+              Don&apos;t have an account?{" "}
+              <a href="#" className="underline underline-offset-4">
+                Sign up
+              </a>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
