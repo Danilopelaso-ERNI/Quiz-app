@@ -18,22 +18,30 @@ const Login = ({ className, ...props }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, userRole } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/home");
+      if (userRole === "Examinee") {
+        navigate("/Examinee");
+      } else if (userRole === "Examiner") {
+        navigate("/Examiner");
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, userRole]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
       await login(email, password);
-      navigate("/home");
+      if (userRole === "Examinee") {
+        navigate("/Examinee");
+      } else if (userRole === "Examiner") {
+        navigate("/Examiner");
+      }
     } catch (error) {
-      setError("Invalid email or password");
+      setError("⛔ Invalid email or password");
     }
   };
 
@@ -60,11 +68,11 @@ const Login = ({ className, ...props }) => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="Enter your erni account"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    setError(""); // Reset error on input change
+                    setError("");
                   }}
                   required
                   aria-label="Email"
@@ -86,13 +94,13 @@ const Login = ({ className, ...props }) => {
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    setError(""); // Reset error on input change
+                    setError(""); 
                   }}
                   required
                   aria-label="Password"
                 />
               </div>
-              {error && <p className="text-red-500 text-center">{error}</p>}
+              {error && <p className="text-red-700 text-center text-[14px] font-medium">{error}</p>}
               <Button type="submit" className="w-full">
                 Login
               </Button>

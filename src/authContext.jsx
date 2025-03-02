@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }) => {
       setUserRole(data.role);
     } catch (error) {
       console.error("Login failed:", error);
+      throw error;
     }
   };
 
@@ -41,10 +42,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
   };
-
-  useEffect(() => {
-    //
-  }, []);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, userRole, login, logout }}>

@@ -155,10 +155,6 @@ const Examiner = () => {
     }
   };
 
-  const handleLogoutClick = () => {
-    navigate("/home");
-  };
-
   return (
     <>
       <Navbar />
@@ -204,10 +200,7 @@ const Examiner = () => {
                     </Button>
                   </div>
                 </div>
-                <div className="flex justify-between">
-                  <Button onClick={handleLogoutClick} variant="outline">
-                    Go back
-                  </Button>
+                <div className="flex justify-center">
                   <Button type="submit">
                     {editIndex !== null ? "Update" : "Submit"}
                   </Button>
